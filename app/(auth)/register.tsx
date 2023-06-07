@@ -1,16 +1,15 @@
 import { useRouter } from "expo-router";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import FormButton from "../../components/FormButton";
 import FormInput from "../../components/FormInput";
 import SocialButton from "../../components/SocialButton";
-import { AuthContext } from "../../context/auth";
 
 const SignupScreen = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
 
   // const { register } = useContext(AuthContext);
 
@@ -19,6 +18,16 @@ const SignupScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Create an account</Text>
+
+      <FormInput
+        labelValue={username}
+        onChangeText={(username: string) => setUsername(username)}
+        placeholderText="username"
+        iconType="user"
+        keyboardType="default"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
 
       <FormInput
         labelValue={email}

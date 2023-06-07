@@ -6,7 +6,8 @@ import {
   signOut,
 } from "firebase/auth";
 import React, { useState } from "react";
-import FIREBASE_AUTH from "../config/FirebaseConfig";
+import { db, FIREBASE_AUTH } from "../config/FirebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
 
 export const AuthContext = React.createContext(null);
 
@@ -30,14 +31,18 @@ function useProtectedRoute(user: UserCredential) {
     ) {
       // Redirect to the sign-in page.
       console.log(
-        `[in auth] user: ${user ? user.user.uid : null} and segments ${segments[0]}`
+        `[in auth] user: ${user ? user.user.uid : null} and segments ${
+          segments[0]
+        }`
       );
       console.log("redirect to sign-in");
       // router.replace("/sign-in");
     } else if (user && inAuthGroup) {
       // Redirect away from the sign-in page.
       console.log(
-        `[in auth] user: ${user ? user.user.uid : null} and segments ${segments[0]}`
+        `[in auth] user: ${user ? user.user.uid : null} and segments ${
+          segments[0]
+        }`
       );
       // router.replace("/");
     }
@@ -55,9 +60,20 @@ export function Provider(props: any) {
         email,
         password
       );
+      createUserInDB(user);
       console.log("registered user: ", user);
     } catch (error) {
       console.log("there's something wrong ", error);
+    }
+  };
+
+  const createUserInDB = async (user: UserCredential) => {
+    try {
+      const docRef = addDoc(collection(db, "users"), {
+        email: user.user.email,
+      });
+    } catch (err) {
+      console.error("creating user in db failed, error: ", err);
     }
   };
 
