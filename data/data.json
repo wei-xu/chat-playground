@@ -1,0 +1,9 @@
+{
+    "data": [
+        {"message": "hello world"},
+        {"message": "im bob"},
+        {"message": "im alice"},
+        {"message": "nice to meet you"},
+        {"message": "you too"}
+    ]
+}
