@@ -1,19 +1,19 @@
 import { useRouter, useSegments } from "expo-router";
 import {
   UserCredential,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import React, { useState } from "react";
-import { db, FIREBASE_AUTH } from "../config/FirebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
+import { createContext, useContext, useEffect, useState } from "react";
+import { FIREBASE_AUTH, db } from "../config/FirebaseConfig";
 
-export const AuthContext = React.createContext(null);
+export const AuthContext = createContext(null);
 
 // This hook can be used to access the user info.
 export function useAuth() {
-  return React.useContext(AuthContext);
+  return useContext(AuthContext);
 }
 
 // This hook will protect the route access based on user authentication.
@@ -21,7 +21,7 @@ function useProtectedRoute(user: UserCredential) {
   const segments = useSegments();
   const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const inAuthGroup = segments[0] === "(auth)";
 
     if (
@@ -50,17 +50,23 @@ function useProtectedRoute(user: UserCredential) {
 }
 
 export function Provider(props: any) {
-  const [user, setAuth] = React.useState<UserCredential>();
+  const [user, setAuth] = useState<UserCredential>();
+  const [username, setUsername] = useState("");
   const [loadingAuth, setLoadingAuth] = useState(false);
 
-  const doRegister = async (email: string, password: string) => {
+  const doRegister = async (
+    email: string,
+    password: string,
+    username: string
+  ) => {
     try {
       const user: UserCredential = await createUserWithEmailAndPassword(
         FIREBASE_AUTH,
         email,
         password
       );
-      createUserInDB(user);
+      console.log("username before registering: ", username);
+      createUserInDB(user); // what if create user with email succeeds but in db fails?
       console.log("registered user: ", user);
     } catch (error) {
       console.log("there's something wrong ", error);
@@ -69,9 +75,11 @@ export function Provider(props: any) {
 
   const createUserInDB = async (user: UserCredential) => {
     try {
-      const docRef = addDoc(collection(db, "users"), {
+      const docRef = setDoc(doc(db, "users", user.user.uid), {
+        username: username,
         email: user.user.email,
       });
+      console.log("created user in db, docRef: ", docRef);
     } catch (err) {
       console.error("creating user in db failed, error: ", err);
     }
@@ -110,6 +118,8 @@ export function Provider(props: any) {
         signOut: doSignOut,
         register: doRegister,
         user,
+        username,
+        setUsername
       }}
     >
       {props.children}

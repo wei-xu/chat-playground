@@ -13,6 +13,9 @@ const Layout = () => {
           options={{ headerTitle: "Login Page", headerShown: false }}
         />
         <Stack.Screen name="index" options={{ headerShown: true }} />
+        <Stack.Screen name="chat/new_group" options={{
+          headerTitle: "Create New Chat"
+        }}/>
       </Stack>
     </Provider>
   );

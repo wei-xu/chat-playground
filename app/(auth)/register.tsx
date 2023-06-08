@@ -1,17 +1,17 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import FormButton from "../../components/FormButton";
 import FormInput from "../../components/FormInput";
 import SocialButton from "../../components/SocialButton";
+import { AuthContext } from "../../context/auth";
 
 const SignupScreen = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [username, setUsername] = useState("");
 
-  // const { register } = useContext(AuthContext);
+  const { register, username, setUsername } = useContext(AuthContext);
 
   const router = useRouter();
 
@@ -59,7 +59,7 @@ const SignupScreen = () => {
         buttonTitle="Sign Up"
         onPress={() => {
           console.log("Sign Up button pressed");
-          // register(email, password);
+          register(email, password, username);
         }}
       />
 

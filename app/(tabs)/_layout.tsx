@@ -15,6 +15,7 @@ const mainPage = () => {
         options={{
           headerRight: () => <Button title="Logout" onPress={signOut} />,
           headerTitle: "Lobby",
+          headerLeft: () => <Button title="Add" onPress={() => router.push('/chat/new_group')}/> // use a icon to replace it
         }}
       />
       <Tabs.Screen

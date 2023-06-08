@@ -91,16 +91,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    paddingLeft: 20,
-    paddingRight: 20,
     justifyContent: "center",
     backgroundColor: "#ffffff",
   },
 
   card: {
-    // width: '100%',
-    flex: 1,
-    flexDirection: "row",
+    width: '100%'
   },
 
   userInfo: {
@@ -122,7 +118,7 @@ const styles = StyleSheet.create({
   textSelection: {
     flexDirection: "column",
     justifyContent: "center",
-    padding: 15,
+    // padding: 15,
     marginLeft: 10,
     width: 300,
     borderBottomWidth: 1,
