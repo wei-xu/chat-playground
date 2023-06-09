@@ -15,6 +15,8 @@ const WelcomePage = () => {
 
         <Link href="/kekkai">To Kekkai</Link>
 
+        <Link href="/sign-in">Sign in</Link>
+
         <Link href="/chat">To Chat</Link>
       </View>
     </SafeAreaView>

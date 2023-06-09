@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
 import { FIREBASE_AUTH, db } from "../config/FirebaseConfig";
 
@@ -36,7 +36,7 @@ function useProtectedRoute(user: UserCredential) {
         }`
       );
       console.log("redirect to sign-in");
-      // router.replace("/sign-in");
+      router.replace("/sign-in");
     } else if (user && inAuthGroup) {
       // Redirect away from the sign-in page.
       console.log(
@@ -44,7 +44,7 @@ function useProtectedRoute(user: UserCredential) {
           segments[0]
         }`
       );
-      // router.replace("/");
+      router.replace("/");
     }
   }, [user, segments]);
 }
@@ -60,29 +60,36 @@ export function Provider(props: any) {
     username: string
   ) => {
     try {
+      const usernameRef = doc(db, "users", username);
+      const usernameSnap = await getDoc(usernameRef);
+
+      if (usernameSnap.exists()) {
+        // stop registering
+        // TODO show error message
+        console.log("username exists");
+        return Promise.reject(new Error("username exists!"));
+      }
+
       const user: UserCredential = await createUserWithEmailAndPassword(
         FIREBASE_AUTH,
         email,
         password
       );
       console.log("username before registering: ", username);
-      createUserInDB(user); // what if create user with email succeeds but in db fails?
-      console.log("registered user: ", user);
+      return createUserInDB(user); // what if create user with email succeeds but in db fails?
+      // console.log("registered user: ", user);
     } catch (error) {
       console.log("there's something wrong ", error);
     }
   };
 
-  const createUserInDB = async (user: UserCredential) => {
-    try {
-      const docRef = setDoc(doc(db, "users", user.user.uid), {
-        username: username,
-        email: user.user.email,
-      });
-      console.log("created user in db, docRef: ", docRef);
-    } catch (err) {
-      console.error("creating user in db failed, error: ", err);
-    }
+  const createUserInDB = (user: UserCredential) => {
+    const docRef = setDoc(doc(db, "users", username), {
+      firebase_uid: user.user.uid,
+      email: user.user.email
+    });
+    console.log("created user in db, docRef: ", docRef);
+    return docRef;
   };
 
   const doSignIn = async (email: string, password: string) => {
@@ -119,7 +126,7 @@ export function Provider(props: any) {
         register: doRegister,
         user,
         username,
-        setUsername
+        setUsername,
       }}
     >
       {props.children}

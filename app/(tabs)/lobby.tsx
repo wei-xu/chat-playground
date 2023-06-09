@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -48,9 +48,10 @@ const Messages = [
 ];
 
 const MessagesScreen = () => {
+  const params = useLocalSearchParams();
+  console.log("groups params ", params);
   const router = useRouter();
   const { user } = useAuth();
-  console.log("in message group screen, user: ", user);
   return (
     <View style={styles.container}>
       <FlatList

@@ -15,9 +15,8 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../context/auth";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const router = useRouter();
   const { signIn } = useAuth();
 
@@ -31,7 +30,9 @@ const LoginScreen = () => {
 
       <FormInput
         labelValue={email}
-        onChangeText={(e: string) => {setEmail(e)}}
+        onChangeText={(e: string) => {
+          setEmail(e);
+        }}
         placeholderText="Email"
         iconType="user"
         keyboardType="email-address"

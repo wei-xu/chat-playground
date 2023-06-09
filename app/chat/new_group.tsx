@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   FlatList,
@@ -8,8 +9,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import FormInput from "../../components/FormInput";
+import { db } from "../../config/FirebaseConfig";
 import { windowHeight } from "../../utils/Dimentions";
+import { useAuth } from "../../context/auth";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const listExistingUser = async () => {
   try {
@@ -20,8 +23,47 @@ const listExistingUser = async () => {
 };
 
 const NewGroupScreen = () => {
+  const params = useLocalSearchParams();
+  console.log("new group params ", params);
+  const router = useRouter();
   const [searchUserName, setSearchUserName] = useState("");
-  const [matchedUsers, setMatchedUsers] = useState(["wxu", "ywang"]);
+//   const [matchedUsers, setMatchedUsers] = useState(["wxu", "ywang"]);
+
+  const [searchError, setSearchError] = useState("");
+  /*
+  fun thing when using this hook, 
+  if you put this hook inside the async function below
+  you break the rule of hook
+  rule of thumb always call hook in a determined env
+  */
+  const { user } = useAuth();
+
+  const searchingUser = async () => {
+    // if (user == null) {
+    //   console.log("searching username but current user is null");
+    //   return;
+    // }
+    // console.log("starting searching user");
+    console.log("searching for ", searchUserName);
+    const ref = doc(db, "users", searchUserName);
+    try {
+      const snap = await getDoc(ref); // await waits for promise to get resolved
+
+      if (snap.exists()) {
+        setSearchError("");
+        router.replace({
+          pathname: "/lobby",
+          params: { new_group: snap.data().firebase_uid },
+        });
+      } else {
+        console.log("snap doesn't exists");
+        setSearchError("user doesn't exist");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <View>
       <View style={style.inputContainer}>
@@ -30,11 +72,13 @@ const NewGroupScreen = () => {
           value={searchUserName}
           onChangeText={setSearchUserName}
           placeholder="find username"
+          autoCorrect={false}
+          autoCapitalize="none"
         />
-        <Button title="Go" />
+        <Button title="Go" onPress={searchingUser} />
       </View>
-
-      <FlatList
+      {searchError === "" ? <></> : <Text> {searchError} </Text>}
+      {/* <FlatList
         data={matchedUsers}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
@@ -44,7 +88,7 @@ const NewGroupScreen = () => {
             </View>
           </TouchableOpacity>
         )}
-      />
+      /> */}
     </View>
   );
 };

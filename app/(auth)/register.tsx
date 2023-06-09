@@ -19,6 +19,7 @@ const SignupScreen = () => {
     <View style={styles.container}>
       <Text style={styles.text}>Create an account</Text>
 
+      {/* TODO put safeguard on safe characters */}
       <FormInput
         labelValue={username}
         onChangeText={(username: string) => setUsername(username)}
