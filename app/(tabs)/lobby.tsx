@@ -1,8 +1,32 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import {
+  collection,
+  doc,
+  documentId,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { db } from "../../config/FirebaseConfig";
 import { useAuth } from "../../context/auth";
+
+import { useEffect, useState } from "react";
+
+const avatarMap = {
+  wxu: require("../../assets/users/user-1.jpg"),
+  toweixu: require("../../assets/users/user-7.jpg"),
+};
+
+const DEFAULT_IMG = require("../../assets/users/user-3.jpg");
 
 const Messages = [
   {
@@ -50,12 +74,56 @@ const Messages = [
 const MessagesScreen = () => {
   const params = useLocalSearchParams();
   console.log("groups params ", params);
+
+  const [messages, setMessages] = useState([]);
   const router = useRouter();
-  const { user } = useAuth();
+  const { username } = useAuth();
+
+  useEffect(() => {
+    console.log("test useEffect");
+
+    async function getGroupList() {
+      const groups = await getDoc(doc(db, "users", username));
+      if (groups.exists()) {
+        const groupList: Array<string> = groups.data().groups;
+        console.log("group list: ", groupList);
+        return groupList;
+      } else {
+        return [];
+      }
+    }
+
+    async function getDetailedGroupList() {
+      const groupList = await getGroupList();
+
+      const q = query(
+        collection(db, "groups"),
+        where(documentId(), "in", groupList)
+      );
+
+      const snap = await getDocs(q);
+
+      const arr = [];
+      snap.forEach((doc) => {
+        console.log("group chat: ", doc.data());
+        arr.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      console.log("arr: ", arr);
+      setMessages(arr);
+      console.log("messages: ", messages);
+    }
+
+    getDetailedGroupList();
+  }, []);
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={Messages}
+        data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -63,18 +131,18 @@ const MessagesScreen = () => {
             onPress={() =>
               router.push({
                 pathname: `/chat`,
-                params: { userName: item.userName },
+                params: { userName: item.group_name },
               })
             }
           >
             <View style={styles.userInfo}>
               <View style={styles.userImgWrapper}>
-                <Image style={styles.userImg} source={item.userImg} />
+                <Image style={styles.userImg} source={avatarMap[item.group_name] || DEFAULT_IMG} />
               </View>
               <View style={styles.textSelection}>
                 <View style={styles.userInfoText}>
-                  <Text style={styles.username}>{item.userName}</Text>
-                  <Text style={styles.postTime}>{item.messageTime}</Text>
+                  <Text style={styles.username}>{item.group_name}</Text>
+                  <Text style={styles.postTime}>{"1 hour ago"}</Text>
                 </View>
                 <Text style={styles.messageText}>{item.messageText}</Text>
               </View>
@@ -97,7 +165,7 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    width: '100%'
+    width: "100%",
   },
 
   userInfo: {
@@ -133,12 +201,12 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 12,
     fontWeight: "bold",
-    fontFamily: "Lato-Regular",
+    // fontFamily: "Lato-Regular",
   },
   postTime: {
     fontSize: 12,
     color: "#666",
-    fontFamily: "Lato-Regular",
+    // fontFamily: "Lato-Regular",
   },
   messageText: {
     fontSize: 14,

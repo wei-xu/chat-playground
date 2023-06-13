@@ -10,7 +10,12 @@ const Layout = () => {
       <Stack>
         <Stack.Screen // this top level screen layout will show in (tabs) screen
           name="(tabs)"
-          options={{ headerTitle: "Login Page", headerShown: false }}
+          options={{
+            headerTitle: "Login Page",
+            headerShown: false,
+            headerBackVisible: false,
+            headerBackButtonMenuEnabled: false,
+          }}
         />
         <Stack.Screen name="index" options={{ headerShown: true }} />
         <Stack.Screen

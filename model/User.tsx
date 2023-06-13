@@ -1,6 +1,7 @@
 class User {
   username: string;
   firebase_uid: string;
+  groups: Array<string>;
   constructor(username: string, firebase_uid: string) {
     this.username = username;
     this.firebase_uid = firebase_uid;
@@ -10,13 +11,14 @@ class User {
 class Group {
   id: string;
   created_at: Date;
+  latest_message_at: Date; // for ordering for a user's groups
   creator: string; // username in User
   members: Array<string>;
   group_name: string;
-    messages: Array<Message>;
+  messages: Array<Message>;
 
-  constructor(id, created_at, creator, members, group_name, messages=[]) {
-    this.id = id; 
+  constructor(id, created_at, creator, members, group_name, messages = []) {
+    this.id = id;
     this.created_at = created_at;
     this.creator = creator;
     this.members = members;
@@ -25,9 +27,9 @@ class Group {
 }
 
 class Message {
-    message_id: string
-    created_at: Date;
-    body: string;
-    group_id: string; // id in Group
-    sender_id: string; // username in User
+  message_id: string;
+  created_at: Date;
+  body: string;
+  group_id: string; // id in Group
+  sender_id: string; // username in User
 }

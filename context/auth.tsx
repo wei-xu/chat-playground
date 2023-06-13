@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
 import { FIREBASE_AUTH, db } from "../config/FirebaseConfig";
 
@@ -16,8 +16,10 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
+const PUBLIC_GROUP = 'sfKJ90tWGRYb3l6CPMzE';
+
 // This hook will protect the route access based on user authentication.
-function useProtectedRoute(user: UserCredential) {
+function useProtectedRoute(user: string) {
   const segments = useSegments();
   const router = useRouter();
 
@@ -30,28 +32,19 @@ function useProtectedRoute(user: UserCredential) {
       !inAuthGroup
     ) {
       // Redirect to the sign-in page.
-      console.log(
-        `[in auth] user: ${user ? user.user.uid : null} and segments ${
-          segments[0]
-        }`
-      );
+
       console.log("redirect to sign-in");
       router.replace("/sign-in");
     } else if (user && inAuthGroup) {
       // Redirect away from the sign-in page.
-      console.log(
-        `[in auth] user: ${user ? user.user.uid : null} and segments ${
-          segments[0]
-        }`
-      );
       router.replace("/");
     }
   }, [user, segments]);
 }
 
 export function Provider(props: any) {
-  const [user, setAuth] = useState<UserCredential>();
-  const [username, setUsername] = useState("");
+  const [user, setAuth] = useState<string>("g0Xi5T1DxycDhvw11P1xC27WqWE3");
+  const [username, setUsername] = useState("wxu");
   const [loadingAuth, setLoadingAuth] = useState(false);
 
   const doRegister = async (
@@ -76,7 +69,7 @@ export function Provider(props: any) {
         password
       );
       console.log("username before registering: ", username);
-      return createUserInDB(user); // what if create user with email succeeds but in db fails?
+      createUserInDB(user); // what if create user with email succeeds but in db fails?
       // console.log("registered user: ", user);
     } catch (error) {
       console.log("there's something wrong ", error);
@@ -84,12 +77,30 @@ export function Provider(props: any) {
   };
 
   const createUserInDB = (user: UserCredential) => {
+    // TODO wrap in one transaction
+    // TODO use function param to pass username instead of using state
+
+
     const docRef = setDoc(doc(db, "users", username), {
       firebase_uid: user.user.uid,
-      email: user.user.email
+      email: user.user.email,
+      groups: [PUBLIC_GROUP]
     });
     console.log("created user in db, docRef: ", docRef);
-    return docRef;
+
+    setDoc(doc(db, "usernames", user.user.uid), {
+      username: username,
+    });
+    console.log("register in usernames db");
+
+    
+    // add user to public channel
+    // add to public sfKJ90tWGRYb3l6CPMzE
+    updateDoc(doc(db, "groups", PUBLIC_GROUP), {
+      members: arrayUnion(username)
+    });
+
+    setUsername("");
   };
 
   const doSignIn = async (email: string, password: string) => {
@@ -99,7 +110,16 @@ export function Provider(props: any) {
         email,
         password
       );
-      setAuth(user);
+
+      // pull username
+      const usernameSnap = await getDoc(doc(db, "usernames", user.user.uid));
+      if (usernameSnap.exists()) {
+        console.log("signing in as username ", usernameSnap.data().username);
+        setUsername(usernameSnap.data().username);
+        setAuth(user.user.uid);
+      } else {
+        throw new Error("username snap doesn't exist");
+      }
       console.log("completed signing in", user.user);
     } catch (error) {
       console.log("there's something wrong signing in ", error);

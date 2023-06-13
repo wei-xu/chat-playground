@@ -49,7 +49,7 @@ const ChatRoom = () => {
     <SafeAreaView style={{flex: 1}}> 
       <Stack.Screen
         options={{
-          headerTitle: `in chat ${userName}`,
+          headerTitle: `${userName}`, // TODO figure out cannot use userName directly
         }}
       />
       <GiftedChat

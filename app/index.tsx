@@ -6,7 +6,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const WelcomePage = () => {
   const { user } = useAuth();
-  console.log(`home page user: ${user ? user.user.uid : null}`);
   return (
     <SafeAreaView>
       <View>

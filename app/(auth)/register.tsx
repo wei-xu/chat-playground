@@ -61,6 +61,7 @@ const SignupScreen = () => {
         onPress={() => {
           console.log("Sign Up button pressed");
           register(email, password, username);
+          router.replace("/sign-in");
         }}
       />
 
