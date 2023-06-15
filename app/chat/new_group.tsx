@@ -21,7 +21,6 @@ const listExistingUser = async () => {
   }
 };
 
-
 const NewGroupScreen = () => {
   const router = useRouter();
   const [searchUserName, setSearchUserName] = useState("");
@@ -82,8 +81,8 @@ const NewGroupScreen = () => {
       creator: username,
       members: [username, searchUserName],
       group_name: searchUserName,
-      messages: [],
-      last_message_at: null
+      //   messages: [], // comment this out, this needs to be a subcollection
+      last_message_at: null,
     });
 
     // insert this group id under this user db

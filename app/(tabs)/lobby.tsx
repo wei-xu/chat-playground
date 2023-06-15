@@ -131,7 +131,7 @@ const MessagesScreen = () => {
             onPress={() =>
               router.push({
                 pathname: `/chat`,
-                params: { userName: item.group_name },
+                params: { otherUserName: item.group_name, groupId: item.id },
               })
             }
           >
