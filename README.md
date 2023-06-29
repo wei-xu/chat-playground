@@ -7,6 +7,8 @@ Use [`expo-router`](https://expo.github.io/router) to build native navigation us
 ```sh
 npx create-react-native-app -t with-router
 ```
+# TODO
+- Message pagination
 
 ## 📝 Notes
 
