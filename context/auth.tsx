@@ -43,8 +43,11 @@ function useProtectedRoute(user: string) {
 }
 
 export function Provider(props: any) {
-  const [user, setAuth] = useState<string>("g0Xi5T1DxycDhvw11P1xC27WqWE3");
-  const [username, setUsername] = useState("wxu");
+  // const [user, setAuth] = useState<string>("g0Xi5T1DxycDhvw11P1xC27WqWE3"); // for dev and testing
+  const [user, setAuth] = useState<string>(""); // for simulation prod test
+
+  // const [username, setUsername] = useState("wxu"); // for dev and testing
+  const [username, setUsername] = useState(""); // for simulation prod test
   const [loadingAuth, setLoadingAuth] = useState(false);
 
   const doRegister = async (
@@ -93,7 +96,7 @@ export function Provider(props: any) {
     });
     console.log("register in usernames db");
 
-    
+
     // add user to public channel
     // add to public sfKJ90tWGRYb3l6CPMzE
     updateDoc(doc(db, "groups", PUBLIC_GROUP), {

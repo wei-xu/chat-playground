@@ -1,21 +1,20 @@
+import { Stack, useLocalSearchParams, usePathname } from "expo-router";
 import {
-  Stack,
-  useLocalSearchParams,
-  usePathname,
-  useRouter,
-} from "expo-router";
+  CollectionReference,
+  Timestamp,
+  addDoc,
+  collection,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 import { GiftedChat } from "react-native-gifted-chat";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../context/auth";
-import {
-  CollectionReference,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-} from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
+import { useAuth } from "../../context/auth";
 
 const ChatRoom = () => {
   const { groupId, otherUserName } = useLocalSearchParams();
@@ -26,15 +25,38 @@ const ChatRoom = () => {
 
   const { user, username } = useAuth();
 
-  useEffect(() => {
-    const getGroupMessage = async (groupId) => {
-      const messageCollectionRef: CollectionReference = collection(
-        db,
-        "groups",
-        groupId,
-        "messages"
-      );
+  const messageCollectionRef = collection(
+    db,
+    "groups",
+    groupId as string,
+    "messages"
+  );
 
+  const originalMessage = [
+    {
+      _id: 1,
+      text: "Hello developer",
+      createdAt: new Date(),
+      user: {
+        _id: 2,
+        name: "React Native",
+        // avatar: "https://placeimg.com/140/140/any",
+      },
+    },
+    {
+      _id: 2,
+      text: "Hello world",
+      createdAt: new Date(),
+      user: {
+        _id: username,
+        name: "toweixu",
+        // avatar: "https://placeimg.com/140/140/any",
+      },
+    },
+  ];
+
+  useEffect(() => {
+    const getGroupAllMessages = async (groupId) => {
       console.log("message collection ref", messageCollectionRef);
 
       const q = await getDocs(messageCollectionRef);
@@ -42,42 +64,46 @@ const ChatRoom = () => {
       if (q.empty) {
         console.log("message of group is empty");
       } else {
-        console.log("message not empty, ", q);
+        console.log("message not empty");
 
-        
+        const q = query(messageCollectionRef, orderBy("createdAt", "desc"));
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const messageList = querySnapshot.docs.map((doc) => {
+            console.log("doc data: ", doc.data());
+            const firebaseData = doc.data();
+            const data = {
+              _id: doc.id,
+              text: firebaseData.text,
+              createdAt: firebaseData.createdAt.toDate(),
+              user: {
+                _id: firebaseData.user._id,
+                name: firebaseData.user.name
+              },
+            };
+
+            return data;
+          });
+
+
+          setMessages(messageList);
+        });
       }
     };
-    setMessages([
-      {
-        _id: 1,
-        text: "Hello developer",
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: "React Native",
-          avatar: "https://placeimg.com/140/140/any",
-        },
-      },
-      {
-        _id: 2,
-        text: "Hello world",
-        createdAt: new Date(),
-        user: {
-          _id: 1,
-          name: "React Native",
-          avatar: "https://placeimg.com/140/140/any",
-        },
-      },
-    ]);
-
-    getGroupMessage(groupId);
+    getGroupAllMessages(groupId);
   }, []);
 
-  const handleSend = useCallback((messages = []) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, messages)
-    );
-  }, []);
+  // const handleSend = useCallback((messages = []) => {
+  //   setMessages((previousMessages) =>
+  //     GiftedChat.append(previousMessages, messages)
+  //   );
+  // }, []);
+
+  const handleSend = async (newMessage) => {
+    console.log(newMessage);
+    const newMessageRef = await addDoc(messageCollectionRef, newMessage[0]);
+    console.log(`new message ref id: ${newMessageRef.id}`);
+  };
 
   return (
     // need to get the top level view of this page to flex as 1
@@ -92,8 +118,8 @@ const ChatRoom = () => {
       />
       <GiftedChat
         messages={messages}
-        onSend={handleSend}
-        user={{ _id: 2, name: username }} // this user _id matches the bubble on the right
+        onSend={(message) => handleSend(message)} // IMessage contains id, text, user param below
+        user={{ _id: username, name: username }} // this user _id matches the bubble on the right
         alwaysShowSend
       />
     </SafeAreaView>
